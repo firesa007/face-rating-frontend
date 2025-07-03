@@ -1,37 +1,42 @@
-<p id="result"></p>
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Face Rating App</title>
+  </head>
+  <body>
+    <h1>Upload a Face</h1>
+    <input type="file" id="imageInput" accept="image/*" />
+    <button onclick="rateMyFace()">Rate My Face</button>
+    <p id="result"></p>
 
-<script>
-  async function rateMyFace() {
-    const fileInput = document.getElementById("imageInput");
-    const file = fileInput.files[0];
-    const resultElement = document.getElementById("result");
+    <script>
+      async function rateMyFace() {
+        const fileInput = document.getElementById("imageInput");
+        const file = fileInput.files[0];
+        const resultElement = document.getElementById("result");
 
-    if (!file) {
-      resultElement.textContent = "Please select an image first.";
-      return;
-    }
+        if (!file) {
+          resultElement.textContent = "Please select an image.";
+          return;
+        }
 
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64 = reader.result.split(",")[1];
+        const formData = new FormData();
+        formData.append("image", file);
 
-      try {
-        const response = await fetch("https://face-rating-backend.onrender.com/rate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image_base64: base64 })
-        });
+        try {
+          const response = await fetch("https://face-rating-backend.onrender.com/api/rate", {
+            method: "POST",
+            body: formData
+          });
 
-        const data = await response.json();
-        resultElement.textContent = "Rating: " + data.rating;
-      } catch (error) {
-        console.error(error);
-        resultElement.textContent = "Something went wrong.";
+          const data = await response.json();
+          resultElement.textContent = "Result: " + data.rating;
+        } catch (err) {
+          console.error(err);
+          resultElement.textContent = "Error occurred while rating.";
+        }
       }
-    };
-
-    reader.readAsDataURL(file);
-  }
-</script>
-</body>
+    </script>
+  </body>
 </html>
+
