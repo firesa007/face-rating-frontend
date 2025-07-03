@@ -1,37 +1,40 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>Face Rating App</title>
 </head>
 <body>
   <h1>Upload a Face</h1>
-  <form id="uploadForm">
-    <input type="file" name="image" accept="image/*" required />
-    <button type="submit">Rate My Face</button>
-  </form>
-
+  <input type="file" id="imageInput">
+  <button onclick="sendImage()">Rate My Face</button>
   <h2 id="result"></h2>
 
   <script>
-    const form = document.getElementById('uploadForm');
-    const result = document.getElementById('result');
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData(form);
-
-      const response = await fetch('http://127.0.0.1:3000/api/rate', {
-        method: 'POST',
-        body: formData
-      });
-
-      const data = await response.json();
-      if (data.rating) {
-        result.innerText = `Your face rating is: ${data.rating}/10`;
-      } else {
-        result.innerText = 'Error: ' + data.error;
+    async function sendImage() {
+      const input = document.getElementById("imageInput");
+      const file = input.files[0];
+      if (!file) {
+        alert("Please select an image.");
+        return;
       }
-    });
+
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64 = reader.result.split(",")[1];
+
+        const response = await fetch("https://face-rating-backend.onrender.com/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image_base64: base64 })
+        });
+
+        const data = await response.json();
+        document.getElementById("result").innerText = "Rating: " + data.rating;
+      };
+
+      reader.readAsDataURL(file);
+    }
   </script>
 </body>
 </html>
